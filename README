@@ -1,1 +1,7 @@
-pastikan memberikan akses eksekusi ke file vbm dengan command sudo chmod +x vbm
+TUTORIAL INSTALASI
+cd vpn_and_bandwidth_monitoring
+sudo chmod +x update_dependencies
+./update_dependencies
+sudo chmod +x vbm
+
+UNTUK MENJALANKAN PROGRAM ./vbm
