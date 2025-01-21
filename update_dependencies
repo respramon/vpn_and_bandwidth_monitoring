@@ -1,0 +1,21 @@
+#!/bin/bash
+
+sudo python3 -m venv .vbm
+sudo .vbm/source/activate
+
+# Memperbarui paket-paket Python
+sudo pip install --upgrade pyopenssl cryptography requests_toolbelt
+
+# Menampilkan versi OpenSSL yang terpasang
+sudo openssl version
+
+# Menghapus dan menginstal ulang pyOpenSSL
+sudo pip uninstall -y pyopenssl
+sudo pip install pyopenssl
+
+# Memperbarui sistem paket
+sudo apt update
+sudo apt upgrade -y
+
+# Menginstal ulang libssl-dev
+sudo apt install --reinstall -y libssl-dev
