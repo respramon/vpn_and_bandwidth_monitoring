@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Jalankan Uvicorn
+echo "Menjalankan VPN dan Bandwidth Monitoring..."
+sudo uvicorn main:app --reload &
+
+# Tunggu sebentar agar server Uvicorn dapat mulai
+sleep 5
+
+# Buka Firefox dan arahkan ke file index.html
+firefox index.html
