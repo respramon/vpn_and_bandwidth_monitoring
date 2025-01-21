@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Network and VPN Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            font-size: 18px;
+        }
+        .vpn-controls {
+            margin-top: 30px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Bandwidth Monitor</h1>
+    <p>Total Upload: <span id="total-upload">0</span> Bytes</p>
+    <p>Total Download: <span id="total-download">0</span> Bytes</p>
+    <p>Usage Time: <span id="usage-time">00:00:00</span></p>
+    <p>Page Loaded At: <span id="page-loaded"></span></p>
+
+    <h1>Real-Time Internet Speed Monitor</h1>
+    <p>Upload Speed: <span id="upload-speed">0</span> Bps</p>
+    <p>Download Speed: <span id="download-speed">0</span> Bps</p>
+
+    <div class="vpn-controls">
+        <h1>VPN Management</h1>
+        <button onclick="connectVPN()">Connect VPN</button>
+        <button onclick="disconnectVPN()">Disconnect VPN</button>
+        <p id="vpn-status">Status: Disconnected</p>
+    </div>
+
+    <script>
+        function getPageLoadedTime() {
+            const options = {
+                timeZone: 'Asia/Jakarta',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const now = new Date();
+            return now.toLocaleString('id-ID', options);
+        }
+
+        let startTime = Date.now();
+
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        function updateUsageTime() {
+            const now = Date.now();
+            const elapsed = now - startTime;
+            document.getElementById("usage-time").textContent = formatTime(elapsed);
+        }
+
+        async function fetchBandwidth() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/bandwidth");
+                const data = await response.json();
+
+                document.getElementById("total-upload").textContent = data.bytes_sent;
+                document.getElementById("total-download").textContent = data.bytes_received;
+            } catch (error) {
+                console.error("Error fetching bandwidth data:", error);
+            }
+        }
+
+        async function fetchInternetSpeed() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/internet_speed");
+                const data = await response.json();
+
+                document.getElementById("upload-speed").textContent = data.upload_speed_bps;
+                document.getElementById("download-speed").textContent = data.download_speed_bps;
+            } catch (error) {
+                console.error("Error fetching internet speed data:", error);
+            }
+        }
+
+        async function connectVPN() {
+            const server = "vpnbook-uk205-tcp443.ovpn";
+            const username = "vpnbook";
+            const password = "hu86c9k";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/vpn/connect", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ server, username, password })
+                });
+
+                const data = await response.json();
+                document.getElementById("vpn-status").textContent = `Status: ${data.status}`;
+            } catch (error) {
+                console.error("Error connecting to VPN:", error);
+                document.getElementById("vpn-status").textContent = "Status: Error connecting to VPN";
+            }
+        }
+
+        async function disconnectVPN() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/vpn/disconnect", {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+                document.getElementById("vpn-status").textContent = `Status: ${data.status}`;
+            } catch (error) {
+                console.error("Error disconnecting from VPN:", error);
+                document.getElementById("vpn-status").textContent = "Status: Error disconnecting VPN";
+            }
+        }
+
+        async function checkVPNStatus() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/vpn/status");
+                const data = await response.json();
+                document.getElementById("vpn-status").textContent = `Status: ${data.status}`;
+            } catch (error) {
+                console.error("Error checking VPN status:", error);
+                document.getElementById("vpn-status").textContent = "Status: Error checking VPN";
+            }
+        }
+
+        document.getElementById("page-loaded").textContent = getPageLoadedTime();
+
+        setInterval(() => {
+            fetchBandwidth();
+            fetchInternetSpeed();
+            updateUsageTime();
+            checkVPNStatus();
+        }, 1000);
+    </script>
+</body>
+</html>
